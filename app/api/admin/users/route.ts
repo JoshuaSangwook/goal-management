@@ -70,7 +70,7 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json()
-    const { userId, action } = body
+    const { userId, action, newPassword } = body
 
     if (!userId || !action) {
       return NextResponse.json(
@@ -102,6 +102,27 @@ export async function PUT(req: Request) {
       updatedUser = await prisma.user.update({
         where: { id: userId },
         data: { role: user.role === 'ADMIN' ? 'USER' : 'ADMIN' },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          active: true,
+        },
+      })
+    } else if (action === 'resetPassword') {
+      if (!newPassword || newPassword.length < 6) {
+        return NextResponse.json(
+          { error: '비밀번호는 최소 6자 이상이어야 합니다' },
+          { status: 400 }
+        )
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+      updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
         select: {
           id: true,
           email: true,

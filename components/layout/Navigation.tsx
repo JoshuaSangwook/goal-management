@@ -13,7 +13,8 @@ const navItems = [
   { href: "/goals", label: "목표" },
   { href: "/check", label: "체크인" },
   { href: "/progress", label: "현황" },
-  { href: "/admin/items", label: "관리자", adminOnly: true },
+  { href: "/admin/items", label: "아이템 관리", adminOnly: true },
+  { href: "/admin/users", label: "사용자 관리", adminOnly: true },
 ]
 
 export function Navigation() {

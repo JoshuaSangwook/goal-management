@@ -15,29 +15,31 @@ export function DatePicker({ selected, onSelect }: DatePickerProps) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="relative">
-      <Button
-        variant="outline"
-        className="w-full justify-start text-left font-normal"
-        onClick={() => setOpen(!open)}
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {format(selected, "yyyy년 MM월 dd일 EEE")}
-      </Button>
+    <div className={open ? "mb-72" : ""}>
+      <div className="relative">
+        <Button
+          variant="outline"
+          className="w-full justify-start text-left font-normal"
+          onClick={() => setOpen(!open)}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {format(selected, "yyyy년 MM월 dd일 EEE")}
+        </Button>
 
-      {open && (
-        <div className="absolute z-10 mt-2 rounded-md border bg-popover shadow-md">
-          <Calendar
-            selected={selected}
-            onSelect={(date) => {
-              if (date) {
-                onSelect(date)
-                setOpen(false)
-              }
-            }}
-          />
-        </div>
-      )}
+        {open && (
+          <div className="absolute z-10 mt-2 rounded-md border bg-popover shadow-md">
+            <Calendar
+              selected={selected}
+              onSelect={(date) => {
+                if (date) {
+                  onSelect(date)
+                  setOpen(false)
+                }
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

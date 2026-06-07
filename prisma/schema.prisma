@@ -1,0 +1,181 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============= 사용자 =============
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // 해시된 비밀번호
+  role      UserRole @default(USER)
+  active    Boolean  @default(true)
+
+  // 관계
+  personalTargets PersonalTarget[]
+  checkRecords    CheckRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+// ============= 미션 & 비전 =============
+model MissionVision {
+  id          String @id @default(cuid())
+  type        MvType
+  title       String
+  content     String // verseText 또는 content/subtitle
+  subtitle    String? // 비전의 두 번째 문장
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mission_visions")
+}
+
+enum MvType {
+  MISSION
+  VISION
+}
+
+// ============= 핵심가치 =============
+model CoreValue {
+  id          String @id @default(cuid())
+  title       String // 정직, 충성, 온유함, 기록, 변화, 성장
+  description String
+  icon        String // BookOpen, HeartHandshake, etc.
+  verse       String // 엡 4:25, 고전 4:2, etc.
+  order       Int    // 표시 순서
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("core_values")
+}
+
+// ============= 목표 영역 정보 =============
+model GoalAreaInfo {
+  id       String   @id @default(cuid())
+  area     GoalArea @unique
+  goal     String   // 배우고 행하고 가르치기
+  target   String   // 난민학교
+  strategy String   // 눅 2:52 — 예수는...
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 관계
+  goalItems GoalItem[]
+
+  @@map("goal_area_infos")
+}
+
+enum GoalArea {
+  INTELLECTUAL // 지적
+  SPIRITUAL    // 영적
+  PHYSICAL     // 신체
+  SOCIAL       // 사회
+}
+
+// ============= 목표 항목 =============
+model GoalItem {
+  id            String        @id @default(cuid())
+  code          String        @unique // 4.1.1, 4.2.1, etc.
+  area          GoalArea
+  title         String
+  description   String?
+  period        Period
+  defaultTarget Int           // 기본 목표 수치
+  targetUnit    String        // 회/일 (월 30회, 연 365회)
+  monthlyTarget Int           @default(0) // 월별 목표 (예: 30회)
+  yearlyTarget  Int           @default(0) // 연별 목표 (예: 365회)
+  active        Boolean       @default(true)
+  order         Int           // 표시 순서
+
+  // 관계
+  areaInfo       GoalAreaInfo      @relation(fields: [areaId], references: [id])
+  areaId         String
+  personalTargets PersonalTarget[]
+  checkRecords   CheckRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("goal_items")
+}
+
+enum Period {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// ============= 개인별 목표 수치 =============
+model PersonalTarget {
+  id         String   @id @default(cuid())
+  userId     String
+  goalItemId String
+  year       Int
+  month      Int      // 1-12
+  target     Int      // 개인별 목표 수치
+
+  // 관계
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalItem GoalItem @relation(fields: [goalItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, goalItemId, year, month])
+  @@map("personal_targets")
+}
+
+// ============= 체크 기록 =============
+model CheckRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  goalItemId String
+  date      DateTime // 체크한 날짜 (시간 제외)
+  checked   Boolean  @default(true)
+
+  // 관계
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalItem GoalItem @relation(fields: [goalItemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 하루에 한 번만 체크 가능 (soft uniqueness)
+  @@unique([userId, goalItemId, date])
+  @@index([userId, date])
+  @@map("check_records")
+}
+
+// ============= 목표 수치 변경 이력 =============
+model TargetHistory {
+  id         String @id @default(cuid())
+  userId     String
+  goalItemId String
+  year       Int
+  month      Int
+  oldTarget  Int
+  newTarget  Int
+  changedBy  String // 변경한 사람 (본인 또는 관리자)
+
+  createdAt DateTime @default(now())
+
+  @@map("target_histories")
+}

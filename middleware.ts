@@ -25,9 +25,7 @@ export async function middleware(req: NextRequest) {
 
   // Admin page protection
   if (isOnAdmin) {
-    // Check both string and enum forms
-    const isAdmin = token?.role === 'ADMIN' || token?.role === 'admin'
-    if (isLoggedIn && isAdmin) {
+    if (isLoggedIn && token?.role === 'ADMIN') {
       return NextResponse.next()
     }
     return NextResponse.redirect(new URL('/login', req.url))

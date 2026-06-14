@@ -4,22 +4,7 @@ import { GoalAreaSection } from "@/components/goal/GoalAreaSection"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { GoalArea } from "@/lib/mock-data"
-
-interface GoalItem {
-  id: string
-  code: string
-  area: GoalArea
-  title: string
-  targetUnit: string
-  period: string
-  defaultTarget: number
-}
-
-interface GoalAreaInfo {
-  area: GoalArea
-  goal: string
-}
+import { GoalArea, GoalItem, GoalAreaInfo } from "@/lib/mock-data"
 
 export default function GoalsPage() {
   const { data: session, status } = useSession()
@@ -39,8 +24,8 @@ export default function GoalsPage() {
         const response = await fetch('/api/goals')
         const data = await response.json()
 
-        setGoalItems(data.goalItems)
-        setAreaInfos(data.areaInfos)
+        setGoalItems(data.goalItems as GoalItem[])
+        setAreaInfos(data.areaInfos as GoalAreaInfo[])
       } catch (error) {
         console.error('Failed to fetch goals:', error)
       } finally {

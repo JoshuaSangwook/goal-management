@@ -10,7 +10,7 @@ ON CONFLICT ("id") DO NOTHING;
 
 -- Vision
 INSERT INTO "mission_visions" ("id", "type", "title", "content", "subtitle")
-VALUES ('vision-1', 'VISION', '비전', '1년에 10회 이상 난민학교에서 ''어성경'' 강의로 청소년들이 말씀을 읽을 수 있도록 돕는다', '영어로 된 강의안을 잘 만들고 외워서 강의하는 ''어성경'' 전문강사가 된다')
+VALUES ('vision-1', 'VISION', '비전', '1년에 10회 이상 난민학교에서 어성경 강의로 청소년들이 말씀을 읽을 수 있도록 돕는다', '영어로 된 강의안을 잘 만들고 외워서 강의하는 어성경 전문강사가 된다')
 ON CONFLICT ("id") DO NOTHING;
 
 -- ===== CORE VALUES =====
@@ -36,7 +36,7 @@ ON CONFLICT ("area") DO NOTHING;
 -- 지적 (INTELLECTUAL)
 INSERT INTO "goal_items" ("id", "code", "area", "title", "description", "period", "defaultTarget", "targetUnit", "monthlyTarget", "yearlyTarget", "active", "order", "areaId") VALUES
 ('item-4-1-1', '4.1.1', 'INTELLECTUAL', '유튜브 채널 듣기 + 추천 책 읽고 독후감 작성', NULL, 'DAILY', 1, '회/일', 30, 365, true, 1, 'area-intellectual'),
-('item-4-1-2', '4.1.2', 'INTELLECTUAL', ''어성경'' 강의안 한국어·영어 정리 및 업데이트', NULL, 'WEEKLY', 1, '회/주', 4, 52, true, 2, 'area-intellectual')
+('item-4-1-2', '4.1.2', 'INTELLECTUAL', '어성경 강의안 한국어·영어 정리 및 업데이트', NULL, 'WEEKLY', 1, '회/주', 4, 52, true, 2, 'area-intellectual')
 ON CONFLICT ("code") DO NOTHING;
 
 -- 영적 (SPIRITUAL)

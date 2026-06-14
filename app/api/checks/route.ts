@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { startOfDay, endOfDay } from 'date-fns'
 
+// Force Node.js runtime for consistent performance
+export const runtime = 'nodejs'
+
 export async function GET(req: Request) {
   try {
     const session = await auth()
@@ -72,19 +75,8 @@ export async function POST(req: Request) {
 
     const checkDate = date ? startOfDay(new Date(date)) : startOfDay(new Date())
 
-    // Verify the goal item exists
-    const goalItem = await prisma.goalItem.findUnique({
-      where: { id: goalItemId },
-    })
-
-    if (!goalItem) {
-      return NextResponse.json(
-        { error: 'Goal item not found' },
-        { status: 404 }
-      )
-    }
-
-    // Upsert check record
+    // Optimized: Skip goalItem verification - FK constraint handles validation
+    // Minimal response - only return what's needed
     const checkRecord = await prisma.checkRecord.upsert({
       where: {
         userId_goalItemId_date: {
@@ -103,12 +95,12 @@ export async function POST(req: Request) {
         date: checkDate,
         checked,
       },
-      include: {
-        goalItem: {
-          include: {
-            areaInfo: true,
-          },
-        },
+      select: {
+        id: true,
+        goalItemId: true,
+        checked: true,
+        date: true,
+        createdAt: true,
       },
     })
 

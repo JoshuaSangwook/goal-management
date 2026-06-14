@@ -33,7 +33,7 @@ export function GoalCheckList() {
   const [checkStates, setCheckStates] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState<Date | undefined>()
-  const [submitting, setSubmitting] = useState(false)
+  const [submittingId, setSubmittingId] = useState<string | null>(null)
 
   // Fetch data
   const fetchData = async (date: Date) => {
@@ -77,10 +77,15 @@ export function GoalCheckList() {
   }, [session, selectedDate, status])
 
   const handleToggle = async (goalItemId: string) => {
-    if (submitting) return
-
-    setSubmitting(true)
     const newChecked = !checkStates[goalItemId]
+
+    // Optimistic update: Update UI immediately
+    setCheckStates((prev) => ({
+      ...prev,
+      [goalItemId]: newChecked,
+    }))
+    setLastUpdate(new Date())
+    setSubmittingId(goalItemId)
 
     try {
       const response = await fetch('/api/checks', {
@@ -98,11 +103,7 @@ export function GoalCheckList() {
       }
 
       const data = await response.json()
-
-      setCheckStates((prev) => ({
-        ...prev,
-        [goalItemId]: newChecked,
-      }))
+      // Sync server time on success
       setLastUpdate(new Date(data.createdAt))
     } catch (error) {
       console.error('Failed to toggle check:', error)
@@ -112,7 +113,7 @@ export function GoalCheckList() {
         [goalItemId]: !newChecked,
       }))
     } finally {
-      setSubmitting(false)
+      setSubmittingId(null)
     }
   }
 
@@ -163,7 +164,7 @@ export function GoalCheckList() {
             checked={checkStates[item.id] || false}
             onToggle={handleToggle}
             checkedAt={lastUpdate && checkStates[item.id] ? lastUpdate.toISOString() : undefined}
-            disabled={submitting}
+            disabled={submittingId === item.id}
           />
         ))}
       </div>

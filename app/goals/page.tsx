@@ -72,13 +72,16 @@ export default function GoalsPage() {
   }
 
   // Group items by area
-  const itemsByArea = goalItems.reduce<Record<GoalArea, GoalItem[]>>((acc, item) => {
-    if (!acc[item.area]) {
-      acc[item.area] = []
-    }
-    acc[item.area].push(item)
-    return acc
-  }, {})
+  const itemsByArea = goalItems.reduce<Record<GoalArea, GoalItem[]>>(
+    (acc, item) => {
+      if (!acc[item.area]) {
+        acc[item.area] = []
+      }
+      acc[item.area].push(item)
+      return acc
+    },
+    {} as Record<GoalArea, GoalItem[]>
+  )
 
   return (
     <div className="container mx-auto px-4 py-8">

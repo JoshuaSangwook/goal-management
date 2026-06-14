@@ -72,7 +72,7 @@ export default function GoalsPage() {
   }
 
   // Group items by area
-  const itemsByArea = goalItems.reduce((acc: Record<GoalArea, GoalItem[]>, item) => {
+  const itemsByArea = goalItems.reduce<Record<GoalArea, GoalItem[]>>((acc, item) => {
     if (!acc[item.area]) {
       acc[item.area] = []
     }

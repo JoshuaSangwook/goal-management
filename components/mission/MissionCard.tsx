@@ -18,6 +18,10 @@ export function MissionCard() {
     fetch('/api/public/mission-vision')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error || !data.missionVisions) {
+          console.error('Failed to load mission:', data.error)
+          return
+        }
         const missionItem = data.missionVisions.find((mv: MissionVision) => mv.type === 'MISSION')
         if (missionItem) setMission(missionItem)
       })

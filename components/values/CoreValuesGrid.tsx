@@ -45,7 +45,13 @@ export function CoreValuesGrid() {
   useEffect(() => {
     fetch('/api/public/core-values')
       .then((res) => res.json())
-      .then((data) => setValues(data.coreValues))
+      .then((data) => {
+        if (data.error || !data.coreValues) {
+          console.error('Failed to load core values:', data.error)
+          return
+        }
+        setValues(data.coreValues)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])

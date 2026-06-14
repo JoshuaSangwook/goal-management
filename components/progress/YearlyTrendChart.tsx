@@ -29,10 +29,12 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip
-              formatter={(value: number, name: string) => {
-                if (name === 'planned') return [value, '계획']
-                if (name === 'actual') return [value, '실제']
-                return [value, name]
+              formatter={(value: unknown, name: unknown) => {
+                const numValue = typeof value === 'number' ? value : 0
+                const nameStr = String(name ?? '')
+                if (nameStr === 'planned') return [numValue, '계획']
+                if (nameStr === 'actual') return [numValue, '실제']
+                return [numValue, nameStr]
               }}
             />
             <Legend />

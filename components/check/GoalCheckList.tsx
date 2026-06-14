@@ -8,17 +8,8 @@ import { GoalCheckItem } from "./GoalCheckItem"
 import { CheckStatusSummary } from "./CheckStatusSummary"
 import { DatePicker } from "./DatePicker"
 import { startOfDay } from "date-fns"
-import { GoalArea, Period } from "@/lib/mock-data"
+import { GoalItem } from "@/lib/mock-data"
 import { CheckCircle2, Calendar } from "lucide-react"
-
-interface GoalItem {
-  id: string
-  code: string
-  area: GoalArea
-  title: string
-  targetUnit: string
-  period: Period
-}
 
 interface CheckRecord {
   id: string

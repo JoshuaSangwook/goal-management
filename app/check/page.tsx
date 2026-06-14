@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { GoalCheckList } from "@/components/check/GoalCheckList"
 
 export default function CheckPage() {
@@ -11,7 +12,9 @@ export default function CheckPage() {
           </p>
         </div>
 
-        <GoalCheckList />
+        <Suspense fallback={<div className="h-40 bg-muted animate-pulse rounded-lg" />}>
+          <GoalCheckList />
+        </Suspense>
       </div>
     </div>
   )

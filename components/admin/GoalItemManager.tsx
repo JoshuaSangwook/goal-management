@@ -7,21 +7,16 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
-import { GoalArea, Period, goalAreaConfig, periodLabels } from "@/lib/mock-data"
+import { GoalArea, Period, goalAreaConfig, periodLabels, GoalItem as BaseGoalItem } from "@/lib/mock-data"
 import { X, Plus, GripVertical, Edit2, Check, ChevronDown, ChevronUp } from "lucide-react"
 
-interface GoalItem {
-  id: string
-  code: string
-  area: GoalArea
-  title: string
-  period: Period
-  defaultTarget: number
-  targetUnit: string
+// Extended interface for admin with database fields
+interface GoalItem extends Omit<BaseGoalItem, 'active'> {
   monthlyTarget: number
   yearlyTarget: number
-  active?: boolean
   order: number
+  areaId: string
+  active?: boolean
 }
 
 export function GoalItemManager() {

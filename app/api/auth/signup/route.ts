@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 import * as bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
+// Force Node.js runtime for bcryptjs compatibility
+export const runtime = 'nodejs'
+
 const signupSchema = z.object({
   name: z.string().min(2, '이름은 2글자 이상이어야 합니다'),
   email: z.string().email('올바른 이메일을 입력해주세요'),

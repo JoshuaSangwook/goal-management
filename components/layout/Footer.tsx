@@ -9,12 +9,7 @@ export function Footer() {
             © 2026 나눔 코칭. All rights reserved.
           </div>
           <div className="flex space-x-4 text-sm">
-            <Link href="/about" className="text-muted-foreground hover:text-foreground">
-              소개
-            </Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-foreground">
-              문의하기
-            </Link>
+            {/* Reserved for future pages */}
           </div>
         </div>
       </div>

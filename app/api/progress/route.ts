@@ -24,16 +24,47 @@ export async function GET(req: Request) {
       where: { active: true },
     })
 
+    // Fetch ALL check records for the entire year at once
+    const yearStart = startOfDay(new Date(year, 0, 1))
+    const yearEnd = startOfDay(new Date(year, 11, 31))
+
+    const allCheckRecords = await prisma.checkRecord.findMany({
+      where: {
+        userId: session.user.id,
+        date: {
+          gte: yearStart,
+          lte: yearEnd,
+        },
+        checked: true,
+      },
+      select: {
+        goalItemId: true,
+        date: true,
+      },
+    })
+
+    // Group check records by goalItemId and month for efficient lookup
+    const checksByGoalAndMonth = new Map<string, Map<number, number>>()
+
+    for (const record of allCheckRecords) {
+      const recordMonth = record.date.getMonth() + 1 // 1-12
+
+      if (!checksByGoalAndMonth.has(record.goalItemId)) {
+        checksByGoalAndMonth.set(record.goalItemId, new Map())
+      }
+
+      const monthMap = checksByGoalAndMonth.get(record.goalItemId)!
+      monthMap.set(recordMonth, (monthMap.get(recordMonth) || 0) + 1)
+    }
+
     // Calculate monthly progress for each item
+    const monthStart = startOfMonth(new Date(year, month - 1))
+    const monthEnd = endOfMonth(new Date(year, month - 1))
+
     const monthlyProgress = []
+
     for (const item of goalItems) {
-      const monthStart = startOfMonth(new Date(year, month - 1))
-      const monthEnd = endOfMonth(new Date(year, month - 1))
-
-      // Get monthly target for this item
       const monthlyTarget = item.defaultTarget
-
-      // Calculate monthly target based on period
       const daysInMonth = new Date(year, month, 0).getDate()
       let monthlyTargetExpected = 0
 
@@ -42,28 +73,18 @@ export async function GET(req: Request) {
           monthlyTargetExpected = monthlyTarget * daysInMonth
           break
         case 'WEEKLY':
-          monthlyTargetExpected = monthlyTarget * 4 // Approx 4 weeks per month
+          monthlyTargetExpected = monthlyTarget * 4
           break
         case 'MONTHLY':
           monthlyTargetExpected = monthlyTarget
           break
         case 'YEARLY':
-          // Skip YEARLY items for monthly progress
           continue
       }
 
-      // Count check records for this month
-      const checkRecords = await prisma.checkRecord.count({
-        where: {
-          userId: session.user.id,
-          goalItemId: item.id,
-          date: {
-            gte: monthStart,
-            lte: monthEnd,
-          },
-          checked: true,
-        },
-      })
+      // Get count from pre-fetched data
+      const monthMap = checksByGoalAndMonth.get(item.id)
+      const checkRecords = monthMap?.get(month) || 0
 
       monthlyProgress.push({
         goalItemId: item.id,
@@ -76,30 +97,21 @@ export async function GET(req: Request) {
     }
 
     // Calculate cumulative progress (year to date)
-    const yearStart = startOfDay(new Date(year, 0, 1))
-    const yearEnd = startOfDay(now)
-
     let totalAchievement = 0
     let totalTargetExpected = 0
 
-    // Calculate yearly targets (sum of all items' yearly targets)
     for (const item of goalItems) {
-      // Count actual achievements for this year
-      const checkCount = await prisma.checkRecord.count({
-        where: {
-          userId: session.user.id,
-          goalItemId: item.id,
-          date: {
-            gte: yearStart,
-            lte: yearEnd,
-          },
-          checked: true,
-        },
-      })
+      const monthMap = checksByGoalAndMonth.get(item.id)
 
-      totalAchievement += checkCount
+      // Sum all months for this goal item
+      let itemYearlyTotal = 0
+      if (monthMap) {
+        for (const count of monthMap.values()) {
+          itemYearlyTotal += count
+        }
+      }
 
-      // Use yearly target for cumulative calculation
+      totalAchievement += itemYearlyTotal
       totalTargetExpected += item.yearlyTarget || 0
     }
 
@@ -109,48 +121,29 @@ export async function GET(req: Request) {
     const monthlyTrend = []
 
     for (let m = 1; m <= 12; m++) {
-      const monthStart = startOfMonth(new Date(year, m - 1))
-      const monthEnd = endOfMonth(new Date(year, m - 1))
-
+      const daysInMonth = new Date(year, m, 0).getDate()
       let monthTotalAchievement = 0
       let monthTotalTarget = 0
 
       for (const item of goalItems) {
-        // For YEARLY items, don't include in monthly calculation
         if (item.period === 'YEARLY') continue
 
-        // Get monthly target for this item (use defaultTarget as monthly target)
         const monthlyTarget = item.defaultTarget
-
-        // Calculate expected target for the month based on period
-        const daysInMonth = new Date(year, m, 0).getDate()
 
         switch (item.period) {
           case 'DAILY':
             monthTotalTarget += monthlyTarget * daysInMonth
             break
           case 'WEEKLY':
-            monthTotalTarget += monthlyTarget * 4 // Approx 4 weeks per month
+            monthTotalTarget += monthlyTarget * 4
             break
           case 'MONTHLY':
             monthTotalTarget += monthlyTarget
             break
         }
 
-        // Count actual achievements for this month
-        const checkCount = await prisma.checkRecord.count({
-          where: {
-            userId: session.user.id,
-            goalItemId: item.id,
-            date: {
-              gte: monthStart,
-              lte: monthEnd,
-            },
-            checked: true,
-          },
-        })
-
-        monthTotalAchievement += checkCount
+        const monthMap = checksByGoalAndMonth.get(item.id)
+        monthTotalAchievement += monthMap?.get(m) || 0
       }
 
       monthlyTrend.push({

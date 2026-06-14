@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation"
@@ -70,7 +70,7 @@ export function GoalCheckList() {
   }
 
   // Load data on mount and when date/session changes
-  useMemo(() => {
+  useEffect(() => {
     if (status === 'authenticated') {
       fetchData(selectedDate)
     }
